@@ -65,8 +65,11 @@ app.MapPost("/cudreg/adfs/postresponse", ([FromForm] string samlResponse) =>
 
         if (saml.IsValid()) // SAML response is valid
         {
-            var nameId = saml.GetNameID();
-            return Results.Content($"Success! Logged in as user {nameId}", "text/html");
+            // Email: For Student, sXXXXX@satitm.chula.ac.th, XXXXX is the student ID
+            var email = saml.GetEmail();
+            var firstName = saml.GetFirstName();
+            var lastName = saml.GetLastName();
+            return Results.Content($"Success! Logged in as user {email} ({firstName} {lastName})", "text/html", System.Text.Encoding.UTF8);
         }
         else 
         {
@@ -75,17 +78,7 @@ app.MapPost("/cudreg/adfs/postresponse", ([FromForm] string samlResponse) =>
     }
     catch (Exception ex)
     {
-        // Optionally include more error detail in dev mode
-        var errorDetails = $@"
-            <html>
-                <body>
-                    <h1>SAML Processing Error</h1>
-                    <p><strong>Message:</strong> {ex.Message}</p>
-                    <pre>{ex.StackTrace}</pre>
-                </body>
-            </html>";
-        
-        return Results.Content(errorDetails, "text/html", System.Text.Encoding.UTF8);
+        return Results.Content("Login Error", "text/html", System.Text.Encoding.UTF8);
     }
 }).DisableAntiforgery();
 
@@ -98,11 +91,10 @@ app.MapPost("/cudreg/adfs/logout", ([FromForm] string samlResponse) =>
 
 	if (saml.IsValid()) //all good?
 	{
-		var username = saml.GetNameID();
-		//pseudo-code-logout-user-from-your-system(username);
-	}
+        // Logout the user from your application here
+    }
 
-	return Results.Ok();
+    return Results.Ok();
 }).DisableAntiforgery();
 
 app.Run();
